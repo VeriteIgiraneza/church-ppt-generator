@@ -1,0 +1,47 @@
+# ===== macOS =====
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# ===== IDE / Editors =====
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ===== Python (backend) =====
+backend/.venv/
+backend/__pycache__/
+backend/**/__pycache__/
+backend/*.pyc
+backend/**/*.pyc
+backend/.pytest_cache/
+backend/.mypy_cache/
+backend/.ruff_cache/
+
+# ===== Node (root + frontend) =====
+node_modules/
+frontend/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ===== Build outputs =====
+frontend/dist/
+frontend/build/
+backend/output/
+backend/**/output/
+
+# ===== Environment files =====
+.env
+.env.local
+.env.*.local
+backend/.env
+
+# ===== Private data (real church members' info) =====
+backend/data/representative_prayer.txt
+
+# ===== Generated PowerPoints =====
+*.pptx
+# But DO commit the template
+!backend/templates/*.pptx

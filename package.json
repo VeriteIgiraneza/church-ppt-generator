@@ -1,0 +1,17 @@
+{
+  "name": "church-ppt-generator",
+  "version": "1.0.0",
+  "description": "Orchestrator for Church PowerPoint Generator (FastAPI backend + Vite/React/TS frontend)",
+  "private": true,
+  "scripts": {
+    "start:backend": "cd backend && uv run uvicorn app.main:app --reload --port 8000",
+    "start:frontend": "cd frontend && npm run dev",
+    "start": "concurrently -n BACKEND,FRONTEND -c blue,green \"npm run start:backend\" \"npm run start:frontend\"",
+    "open": "wait-on http://localhost:5173 && open http://localhost:5173",
+    "dev": "concurrently -n BACKEND,FRONTEND,BROWSER -c blue,green,magenta \"npm run start:backend\" \"npm run start:frontend\" \"npm run open\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "wait-on": "^7.2.0"
+  }
+} 

@@ -1,0 +1,6 @@
+{
+  "representative_prayer_list": [
+    {"name": "M. Mike Doe"},
+    {"name": "M. Doe Mike"}
+  ]
+}
