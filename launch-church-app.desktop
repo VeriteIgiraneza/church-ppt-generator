@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Church PowerPoint Generator
+Comment=Generate church service presentations
+Exec=bash -c "cd \"$(dirname %k)\" && npm run dev"
+Terminal=true
+Categories=Office;Utility;
+StartupNotify=false

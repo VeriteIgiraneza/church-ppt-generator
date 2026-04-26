@@ -44,4 +44,4 @@ backend/data/representative_prayer.txt
 # ===== Generated PowerPoints =====
 *.pptx
 # But DO commit the template
-!backend/templates/*.pptx
+!backend/templates/*.pptxbackend/output/
