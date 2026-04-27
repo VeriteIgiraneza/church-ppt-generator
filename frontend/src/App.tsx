@@ -3,6 +3,7 @@ import { BibleSelector } from "./features/bible/BibleSelector";
 import { GenerateButton } from "./features/generate/GenerateButton";
 import { HymnPicker } from "./features/hymns/HymnPicker";
 import { PrayerLeaderSelector } from "./features/prayer/PrayerLeaderSelector";
+import { FlowItem } from "./features/service-flow/FlowItem";
 import { checkHealth } from "./shared/api/client";
 import type { BibleReference } from "./types/service";
 import type { Hymn } from "./types/hymn";
@@ -18,7 +19,7 @@ function App() {
     status: "loading",
   });
 
-  // ----- Form state -----
+  // Form state
   const [serviceTitle, setServiceTitle] = useState("");
   const [hymns, setHymns] = useState<(Hymn | null)[]>([null, null, null, null]);
   const [prayerLeader, setPrayerLeader] = useState("");
@@ -31,10 +32,8 @@ function App() {
       .catch((err) => setHealthState({ status: "error", message: err.message }));
   }, []);
 
-  // Auto-select the same book for the key verse as the bible reading
   const fixedKeyVerseBook = bibleReading?.book;
 
-  // ----- Build the request, or report what's missing -----
   const { request, validationMessage } = useMemo(() => {
     const missing: string[] = [];
     if (!serviceTitle.trim()) missing.push("service title");
@@ -82,13 +81,13 @@ function App() {
       <section style={{ marginBottom: 24 }}>
         <p>
           Backend:{" "}
-          {healthState.status === "loading" && "checking..."}
-          {healthState.status === "success" && `${healthState.data}`}
-          {healthState.status === "error" && `${healthState.message}`}
+          {healthState.status === "loading" && "⏳ checking..."}
+          {healthState.status === "success" && `✅ ${healthState.data}`}
+          {healthState.status === "error" && `❌ ${healthState.message}`}
         </p>
       </section>
 
-      {/* Service title */}
+      {/* Service title — sits above the flow */}
       <section style={{ marginBottom: 24 }}>
         <h2 style={{ fontSize: "1.1rem", color: "#666" }}>Service title</h2>
         <input
@@ -107,47 +106,83 @@ function App() {
         />
       </section>
 
-      {/* Hymns */}
+      {/* Service flow — everything in deck order */}
       <section style={{ marginBottom: 24 }}>
-        <h2 style={{ fontSize: "1.1rem", color: "#666" }}>Hymns</h2>
-        {hymns.map((hymn, idx) => (
-          <HymnPicker
-            key={idx}
-            label={`Hymn ${idx + 1}`}
-            selected={hymn}
-            onSelect={(h) => updateHymn(idx, h)}
-          />
-        ))}
-      </section>
+        <h2 style={{ fontSize: "1.1rem", color: "#666" }}>Service flow</h2>
 
-      {/* Prayer */}
-      <section style={{ marginBottom: 24 }}>
-        <h2 style={{ fontSize: "1.1rem", color: "#666" }}>Prayer</h2>
-        <PrayerLeaderSelector
-          selected={prayerLeader}
-          onChange={setPrayerLeader}
+        <FlowItem
+          label="Title slide"
+          detail={serviceTitle.trim() || undefined}
+          readOnly
         />
-      </section>
 
-      {/* Bible reading */}
-      <section style={{ marginBottom: 24 }}>
-        <h2 style={{ fontSize: "1.1rem", color: "#666" }}>Bible reading</h2>
-        <BibleSelector onChange={setBibleReading} />
-      </section>
+        <FlowItem label="Hymn 1">
+          <HymnPicker
+            label=""
+            selected={hymns[0]}
+            onSelect={(h) => updateHymn(0, h)}
+          />
+        </FlowItem>
 
-      {/* Key verse — same book as bible reading */}
-      <section style={{ marginBottom: 32 }}>
-        <h2 style={{ fontSize: "1.1rem", color: "#666" }}>
-          Key verse{" "}
-          {!fixedKeyVerseBook && (
-            <span style={{ fontSize: "0.85rem", color: "#999" }}>
-              (pick a Bible reading first)
-            </span>
+        <FlowItem label="Hymn 2">
+          <HymnPicker
+            label=""
+            selected={hymns[1]}
+            onSelect={(h) => updateHymn(1, h)}
+          />
+        </FlowItem>
+
+        <FlowItem label="Hymn 3">
+          <HymnPicker
+            label=""
+            selected={hymns[2]}
+            onSelect={(h) => updateHymn(2, h)}
+          />
+        </FlowItem>
+
+        <FlowItem label="Two by Two Prayer" readOnly />
+
+        <FlowItem label="The Apostles' Creed" readOnly />
+
+        <FlowItem label="Personal Prayer" readOnly />
+
+        <FlowItem label="Hymn 4">
+          <HymnPicker
+            label=""
+            selected={hymns[3]}
+            onSelect={(h) => updateHymn(3, h)}
+          />
+        </FlowItem>
+
+        <FlowItem label="Representative Prayer">
+          <PrayerLeaderSelector
+            selected={prayerLeader}
+            onChange={setPrayerLeader}
+          />
+        </FlowItem>
+
+        <FlowItem
+          label="Title slide (repeat)"
+          detail={serviceTitle.trim() || undefined}
+          readOnly
+        />
+
+        <FlowItem label="Bible reading">
+          <BibleSelector onChange={setBibleReading} allowNextChapter/>
+        </FlowItem>
+
+        <FlowItem label="Key verse">
+          {fixedKeyVerseBook ? (
+            <BibleSelector
+              onChange={setKeyVerse}
+              fixedBook={fixedKeyVerseBook}
+            />
+          ) : (
+            <p style={{ color: "#999", fontStyle: "italic", margin: 0 }}>
+              Pick a Bible reading first
+            </p>
           )}
-        </h2>
-        {fixedKeyVerseBook && (
-          <BibleSelector onChange={setKeyVerse} fixedBook={fixedKeyVerseBook} />
-        )}
+        </FlowItem>
       </section>
 
       {/* Generate */}
@@ -166,4 +201,4 @@ function App() {
   );
 }
 
-export default App;
+export default App; 

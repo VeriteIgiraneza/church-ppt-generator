@@ -8,12 +8,19 @@ from pydantic import BaseModel, Field
 
 
 class BibleReference(BaseModel):
-    """A range of Bible verses (used for both main reading and key verse)."""
+    """A range of Bible verses (used for both main reading and key verse).
+
+    Optionally extends into a contiguous range in the next chapter
+    (e.g., John 3:30 — 4:3). All next_* fields must be provided together.
+    """
 
     book: str
     chapter: int = Field(..., ge=1)
     start_verse: int = Field(..., ge=1)
     end_verse: int = Field(..., ge=1)
+    next_chapter: int | None = Field(default=None, ge=1)
+    next_start_verse: int | None = Field(default=None, ge=1)
+    next_end_verse: int | None = Field(default=None, ge=1)
 
 
 class GeneratePresentationRequest(BaseModel):

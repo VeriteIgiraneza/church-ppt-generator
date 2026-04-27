@@ -5,6 +5,9 @@ export interface BibleReference {
   chapter: number;
   start_verse: number;
   end_verse: number;
+  next_chapter?: number;
+  next_start_verse?: number;
+  next_end_verse?: number;
 }
 
 export interface GeneratePresentationRequest {

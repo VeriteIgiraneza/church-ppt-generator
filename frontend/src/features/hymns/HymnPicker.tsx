@@ -26,17 +26,19 @@ export function HymnPicker({ label, selected, onSelect }: Props) {
 
   return (
     <div style={{ marginBottom: 12 }}>
-      <label
-        style={{
-          display: "block",
-          marginBottom: 4,
-          fontSize: "0.9rem",
-          color: "#444",
-          fontWeight: 600,
-        }}
-      >
-        {label}
-      </label>
+      {label && (
+        <label
+          style={{
+            display: "block",
+            marginBottom: 4,
+            fontSize: "0.9rem",
+            color: "#444",
+            fontWeight: 600,
+          }}
+        >
+          {label}
+        </label>
+      )}
 
       {selected ? (
         <div
@@ -51,7 +53,7 @@ export function HymnPicker({ label, selected, onSelect }: Props) {
           }}
         >
           <span>
-            <strong>#{selected.hymn_id}</strong> {selected.title}
+            <strong>{selected.hymn_id}</strong> {selected.title}
             {selected.author && (
               <span style={{ color: "#666", marginLeft: 6 }}>
                 — {selected.author}
@@ -136,7 +138,7 @@ export function HymnPicker({ label, selected, onSelect }: Props) {
                     e.currentTarget.style.background = "white";
                   }}
                 >
-                  <strong>#{hymn.hymn_id}</strong> {hymn.title}
+                  <strong>{hymn.hymn_id}</strong> {hymn.title}
                   {hymn.author && (
                     <span style={{ color: "#666", marginLeft: 6 }}>
                       — {hymn.author}

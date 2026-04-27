@@ -54,6 +54,21 @@ def build_presentation(
         req.bible_reading.start_verse,
         req.bible_reading.end_verse,
     )
+
+    # Continue into the next chapter, if requested
+    if (
+        req.bible_reading.next_chapter is not None
+        and req.bible_reading.next_start_verse is not None
+        and req.bible_reading.next_end_verse is not None
+    ):
+        next_verses = repo.get_bible_passage(
+            req.bible_reading.book,
+            req.bible_reading.next_chapter,
+            req.bible_reading.next_start_verse,
+            req.bible_reading.next_end_verse,
+        )
+        bible_verses = bible_verses + next_verses
+
     if not bible_verses:
         raise HTTPException(
             status_code=404,
@@ -100,7 +115,18 @@ def build_presentation(
 
 
 def _format_reference(ref: BibleReference) -> str:
-    """e.g. 'John 3:16' or 'John 3:16-17'."""
+    """e.g. 'John 3:16', 'John 3:16-17', or 'John 3:30, 4:1-3'."""
     if ref.start_verse == ref.end_verse:
-        return f"{ref.book} {ref.chapter}:{ref.start_verse}"
-    return f"{ref.book} {ref.chapter}:{ref.start_verse}-{ref.end_verse}"
+        first = f"{ref.book} {ref.chapter}:{ref.start_verse}"
+    else:
+        first = f"{ref.book} {ref.chapter}:{ref.start_verse}-{ref.end_verse}"
+
+    if ref.next_chapter is None:
+        return first
+
+    if ref.next_start_verse == ref.next_end_verse:
+        second = f"{ref.next_chapter}:{ref.next_start_verse}"
+    else:
+        second = f"{ref.next_chapter}:{ref.next_start_verse}-{ref.next_end_verse}"
+
+    return f"{first}, {second}"

@@ -30,7 +30,7 @@ export function PrayerLeaderSelector({ selected, onChange }: Props) {
           fontWeight: 600,
         }}
       >
-        Representative Prayer leader
+        Prayer leader
       </label>
       <select
         value={selected}
