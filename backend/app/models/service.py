@@ -27,8 +27,14 @@ class GeneratePresentationRequest(BaseModel):
     """Everything the user picks in the UI to build a presentation."""
 
     service_title: str = Field(..., min_length=1, description="Service title")
-    hymn_ids: list[int] = Field(
-        ..., min_length=4, max_length=4, description="The 4 selected hymn IDs"
+    hymn_ids: list[int | None] = Field(
+        ...,
+        min_length=4,
+        max_length=4,
+        description=(
+            "The 4 hymn slots. Use null for empty slots — those will be "
+            "skipped silently in the generated deck."
+        ),
     )
     prayer_leader: str = Field(
         ..., min_length=1, description="Name of the Representative Prayer leader"

@@ -28,6 +28,7 @@ from app.slides.hymn import add_hymn_slides
 from app.slides.key_verse import add_key_verse_slide
 from app.slides.prayer import add_prayer_slide
 from app.slides.title import add_title_slide
+from app.slides.lords_prayer import add_lords_prayer_slides
 
 PRAYER_TWO_BY_TWO = "Two by Two Prayer"
 PRAYER_PERSONAL = "Personal Prayer"
@@ -41,8 +42,12 @@ def build_presentation(
 ) -> Path:
     """Build the full .pptx file and return the saved path."""
     # ----- Look up everything we need from the repo -----
-    hymns = []
+    # Empty slots (None) are kept as None and skipped silently when rendering.
+    hymns: list = []
     for hymn_id in req.hymn_ids:
+        if hymn_id is None:
+            hymns.append(None)
+            continue
         hymn = next((h for h in repo.hymns if h.hymn_id == hymn_id), None)
         if hymn is None:
             raise HTTPException(status_code=404, detail=f"Hymn {hymn_id} not found")
@@ -99,17 +104,25 @@ def build_presentation(
     key_verse_ref_str = _format_reference(req.key_verse)
 
     add_title_slide(prs, req.service_title, bible_ref_str)
-    add_hymn_slides(prs, hymns[0])
-    add_hymn_slides(prs, hymns[1])
-    add_hymn_slides(prs, hymns[2])
+    if hymns[0] is not None:
+        add_hymn_slides(prs, hymns[0])
+    if hymns[1] is not None:
+        add_hymn_slides(prs, hymns[1])
+    if hymns[2] is not None:
+        add_hymn_slides(prs, hymns[2])
     add_prayer_slide(prs, PRAYER_TWO_BY_TWO)
     add_creed_slides(prs, creed)
     add_prayer_slide(prs, PRAYER_PERSONAL)
-    add_hymn_slides(prs, hymns[3])
+    if hymns[3] is not None:
+        add_hymn_slides(prs, hymns[3])
     add_prayer_slide(prs, PRAYER_REPRESENTATIVE, prayer_leader=req.prayer_leader)
     add_title_slide(prs, req.service_title, bible_ref_str)
     add_bible_reading_slides(prs, bible_verses)
     add_key_verse_slide(prs, key_verses, key_verse_ref_str)
+
+    # Always close with The Lord's Prayer if it's loaded
+    if repo.lords_prayer is not None:
+        add_lords_prayer_slides(prs, repo.lords_prayer)
 
     return save_presentation(prs, filename)
 

@@ -17,6 +17,7 @@ from app.models.bible import BibleVerse
 from app.models.creed import Creed
 from app.models.hymn import Hymn
 from app.models.prayer import PrayerLeader
+from app.models.lords_prayer import LordsPrayer
 
 
 class DataRepository:
@@ -26,6 +27,7 @@ class DataRepository:
         self._hymns: list[Hymn] = []
         self._bible: list[BibleVerse] = []
         self._creeds: list[Creed] = []
+        self._lords_prayer: LordsPrayer | None = None
         self._prayer_leaders: list[PrayerLeader] = []
         self._loaded = False
 
@@ -39,6 +41,7 @@ class DataRepository:
         self._hymns = self._load_hymns(settings.hymns_file)
         self._bible = self._load_bible(settings.bible_file)
         self._creeds = self._load_creeds(settings.creeds_file)
+        self._lords_prayer = self._load_lords_prayer(settings.lords_prayer_file)
         self._prayer_leaders = self._load_prayer_leaders(settings.prayer_leaders_file)
         self._loaded = True
 
@@ -46,6 +49,7 @@ class DataRepository:
             f"[data] Loaded {len(self._hymns)} hymns, "
             f"{len(self._bible)} verses, "
             f"{len(self._creeds)} creeds, "
+            f"lord's prayer: {'yes' if self._lords_prayer else 'no'}, "
             f"{len(self._prayer_leaders)} prayer leaders"
         )
 
@@ -68,10 +72,18 @@ class DataRepository:
         return [BibleVerse(**row) for row in df.to_dict("records")]
 
     @staticmethod
-    def _load_creeds(path: Path) -> list[Creed]:
+    def _load_lords_prayer(path: Path) -> LordsPrayer | None:
+        """Load The Lord's Prayer from CSV. Returns None if file missing."""
+        if not path.exists():
+            print(f"[data] WARNING: Lord's Prayer file not found at {path}")
+            return None
+
         df = pd.read_csv(path, encoding="utf-8", keep_default_na=False)
         df.columns = df.columns.str.strip()
-        return [Creed(**row) for row in df.to_dict("records")]
+        records = df.to_dict("records")
+        if not records:
+            return None
+        return LordsPrayer(**records[0])
 
     @staticmethod
     def _load_prayer_leaders(path: Path) -> list[PrayerLeader]:
@@ -104,15 +116,15 @@ class DataRepository:
         return self._creeds
 
     @property
-    def prayer_leaders(self) -> list[PrayerLeader]:
+    def lords_prayer(self) -> LordsPrayer | None:
         self._ensure_loaded()
-        return self._prayer_leaders
+        return self._lords_prayer
 
     def _ensure_loaded(self) -> None:
         if not self._loaded:
             self.load_all()
 
-    # ---------- hymn search ----------
+    # hymn search
 
     def search_hymns(self, query: str) -> list[Hymn]:
         """Find hymns matching the query.

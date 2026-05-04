@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { BibleSelector } from "./features/bible/BibleSelector";
+import type { AllowedRange } from "./features/bible/BibleSelector";
 import { GenerateButton } from "./features/generate/GenerateButton";
 import { HymnPicker } from "./features/hymns/HymnPicker";
 import { PrayerLeaderSelector } from "./features/prayer/PrayerLeaderSelector";
@@ -34,10 +35,36 @@ function App() {
 
   const fixedKeyVerseBook = bibleReading?.book;
 
+  // Build the list of chapter ranges the user picked for the Bible reading.
+  // The Key Verse picker uses this to constrain its dropdowns so the user
+  // can't select a verse outside what's actually being read.
+  const keyVerseAllowedRanges: AllowedRange[] | undefined = bibleReading
+    ? [
+        {
+          chapter: bibleReading.chapter,
+          start_verse: bibleReading.start_verse,
+          end_verse: bibleReading.end_verse,
+        },
+        ...(bibleReading.next_chapter !== undefined &&
+        bibleReading.next_start_verse !== undefined &&
+        bibleReading.next_end_verse !== undefined
+          ? [
+              {
+                chapter: bibleReading.next_chapter,
+                start_verse: bibleReading.next_start_verse,
+                end_verse: bibleReading.next_end_verse,
+              },
+            ]
+          : []),
+      ]
+    : undefined;
+
   const { request, validationMessage } = useMemo(() => {
+    // Hymns are now individually optional — empty slots are silently skipped
+    // when generating the deck. Service title, prayer leader, bible reading,
+    // and key verse remain required.
     const missing: string[] = [];
     if (!serviceTitle.trim()) missing.push("service title");
-    if (hymns.some((h) => h === null)) missing.push("all 4 hymns");
     if (!prayerLeader) missing.push("prayer leader");
     if (!bibleReading) missing.push("bible reading");
     if (!keyVerse) missing.push("key verse");
@@ -52,7 +79,7 @@ function App() {
     return {
       request: {
         service_title: serviceTitle.trim(),
-        hymn_ids: hymns.map((h) => h!.hymn_id),
+        hymn_ids: hymns.map((h) => (h ? h.hymn_id : null)),
         prayer_leader: prayerLeader,
         bible_reading: bibleReading!,
         key_verse: keyVerse!,
@@ -176,6 +203,7 @@ function App() {
             <BibleSelector
               onChange={setKeyVerse}
               fixedBook={fixedKeyVerseBook}
+              allowedRanges={keyVerseAllowedRanges}
             />
           ) : (
             <p style={{ color: "#999", fontStyle: "italic", margin: 0 }}>
@@ -183,6 +211,8 @@ function App() {
             </p>
           )}
         </FlowItem>
+
+        <FlowItem label="The Lord's Prayer" readOnly />
       </section>
 
       {/* Generate */}

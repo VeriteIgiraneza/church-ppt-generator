@@ -31,6 +31,7 @@ class Settings(BaseSettings):
     bible_file: Path = BACKEND_DIR / "data" / "bible.csv"
     creeds_file: Path = BACKEND_DIR / "data" / "Creed.csv"
     prayer_leaders_file: Path = BACKEND_DIR / "data" / "representative_prayer.txt"
+    lords_prayer_file: Path = BACKEND_DIR / "data" / "lords_prayer.csv"
 
     # Template
     template_file: Path = BACKEND_DIR / "templates" / "church_template.pptx"

@@ -12,7 +12,8 @@ export interface BibleReference {
 
 export interface GeneratePresentationRequest {
   service_title: string;
-  hymn_ids: number[];
+  /** 4 slots; null means "skip this hymn slot in the generated deck". */
+  hymn_ids: (number | null)[];
   prayer_leader: string;
   bible_reading: BibleReference;
   key_verse: BibleReference;

@@ -13,6 +13,18 @@ interface Props {
   fixedBook?: string;
   /** Allow the "continue to next chapter" toggle. Off by default. */
   allowNextChapter?: boolean;
+  /**
+   * Optional constraint: only allow selecting verses that fall within
+   * one of these chapter ranges. Used by the Key Verse picker to keep
+   * its selection inside the Bible Reading.
+   */
+  allowedRanges?: AllowedRange[];
+}
+
+export interface AllowedRange {
+  chapter: number;
+  start_verse: number;
+  end_verse: number;
 }
 
 const selectStyle: React.CSSProperties = {
@@ -38,7 +50,12 @@ const fieldStyle: React.CSSProperties = {
   display: "inline-block",
 };
 
-export function BibleSelector({ onChange, fixedBook, allowNextChapter = false }: Props) {
+export function BibleSelector({
+  onChange,
+  fixedBook,
+  allowNextChapter = false,
+  allowedRanges,
+}: Props) {
   const [books, setBooks] = useState<string[]>([]);
   const [chapters, setChapters] = useState<number[]>([]);
   const [verses, setVerses] = useState<number[]>([]);
@@ -128,12 +145,16 @@ export function BibleSelector({ onChange, fixedBook, allowNextChapter = false }:
   useEffect(() => {
     setError("");
 
+    // End verse is OPTIONAL — when empty, treat it as a single-verse pick.
+    const effectiveEndVerse =
+      endVerse === "" ? startVerse : endVerse;
+
     const mainComplete =
       book &&
       chapter !== "" &&
       startVerse !== "" &&
-      endVerse !== "" &&
-      Number(endVerse) >= Number(startVerse);
+      effectiveEndVerse !== "" &&
+      Number(effectiveEndVerse) >= Number(startVerse);
 
     if (!mainComplete) {
       setPassage([]);
@@ -141,13 +162,16 @@ export function BibleSelector({ onChange, fixedBook, allowNextChapter = false }:
       return;
     }
 
-    // If next-chapter toggle is on, require all 3 next-* fields
+    // Next-chapter end verse is also optional
+    const effectiveNextEndVerse =
+      nextEndVerse === "" ? nextStartVerse : nextEndVerse;
+
     const nextRequested = useNextChapter;
     const nextComplete =
       nextChapter !== "" &&
       nextStartVerse !== "" &&
-      nextEndVerse !== "" &&
-      Number(nextEndVerse) >= Number(nextStartVerse);
+      effectiveNextEndVerse !== "" &&
+      Number(effectiveNextEndVerse) >= Number(nextStartVerse);
 
     if (nextRequested && !nextComplete) {
       // Don't report a partial reference upstream — wait until next-chapter is filled in
@@ -157,19 +181,24 @@ export function BibleSelector({ onChange, fixedBook, allowNextChapter = false }:
         book,
         chapter: Number(chapter),
         start_verse: Number(startVerse),
-        end_verse: Number(endVerse),
+        end_verse: Number(effectiveEndVerse),
         ...(nextRequested && nextComplete
           ? {
               next_chapter: Number(nextChapter),
               next_start_verse: Number(nextStartVerse),
-              next_end_verse: Number(nextEndVerse),
+              next_end_verse: Number(effectiveNextEndVerse),
             }
           : {}),
       });
     }
 
     // Fetch main passage preview
-    getBiblePassage(book, Number(chapter), Number(startVerse), Number(endVerse))
+    getBiblePassage(
+      book,
+      Number(chapter),
+      Number(startVerse),
+      Number(effectiveEndVerse)
+    )
       .then(setPassage)
       .catch((err) => setError(`Failed to load passage: ${err.message}`));
 
@@ -179,7 +208,7 @@ export function BibleSelector({ onChange, fixedBook, allowNextChapter = false }:
         book,
         Number(nextChapter),
         Number(nextStartVerse),
-        Number(nextEndVerse)
+        Number(effectiveNextEndVerse)
       )
         .then(setNextPassage)
         .catch((err) =>
@@ -199,10 +228,68 @@ export function BibleSelector({ onChange, fixedBook, allowNextChapter = false }:
     nextEndVerse,
   ]);
 
+  // Auto-clear current selection if it falls outside allowedRanges
+  // (e.g., user changed the Bible reading and the previous key verse
+  // is no longer valid). Also auto-select the chapter when only one
+  // is allowed — saves the user a redundant click.
+  useEffect(() => {
+    if (!allowedRanges) return;
+
+    // Auto-select chapter if there's exactly one allowed
+    if (allowedRanges.length === 1) {
+      const onlyChapter = allowedRanges[0].chapter;
+      if (chapter !== onlyChapter) {
+        setChapter(onlyChapter);
+        setStartVerse("");
+        setEndVerse("");
+      }
+      return;
+    }
+
+    // Otherwise: clear if current chapter no longer falls in any allowed range
+    if (chapter === "") return;
+
+    const range = allowedRanges.find((r) => r.chapter === Number(chapter));
+    const stillValid =
+      range !== undefined &&
+      (startVerse === "" ||
+        (Number(startVerse) >= range.start_verse &&
+          Number(startVerse) <= range.end_verse)) &&
+      (endVerse === "" ||
+        (Number(endVerse) >= range.start_verse &&
+          Number(endVerse) <= range.end_verse));
+
+    if (!stillValid) {
+      setChapter("");
+      setStartVerse("");
+      setEndVerse("");
+    }
+  }, [allowedRanges]);
+
   return (
     <div>
       {error && (
         <p style={{ color: "crimson", marginBottom: 12 }}>⚠ {error}</p>
+      )}
+
+      {allowedRanges && allowedRanges.length > 0 && (
+        <p
+          style={{
+            margin: "0 0 12px 0",
+            fontSize: "0.85rem",
+            color: "#666",
+            fontStyle: "italic",
+          }}
+        >
+          Available:{" "}
+          {allowedRanges
+            .map((r) =>
+              r.start_verse === r.end_verse
+                ? `${r.chapter}:${r.start_verse}`
+                : `${r.chapter}:${r.start_verse}-${r.end_verse}`
+            )
+            .join(", ")}
+        </p>
       )}
 
       <div>
@@ -224,24 +311,34 @@ export function BibleSelector({ onChange, fixedBook, allowNextChapter = false }:
           </div>
         )}
 
-        <div style={fieldStyle}>
-          <label style={labelStyle}>Chapter</label>
-          <select
-            value={chapter}
-            onChange={(e) =>
-              setChapter(e.target.value ? Number(e.target.value) : "")
-            }
-            style={selectStyle}
-            disabled={!book}
-          >
-            <option value="">—</option>
-            {chapters.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-        </div>
+        {/* Hide the chapter dropdown when only one chapter is allowed —
+            it's auto-selected, so showing the picker is just visual noise. */}
+        {!(allowedRanges && allowedRanges.length === 1) && (
+          <div style={fieldStyle}>
+            <label style={labelStyle}>Chapter</label>
+            <select
+              value={chapter}
+              onChange={(e) =>
+                setChapter(e.target.value ? Number(e.target.value) : "")
+              }
+              style={selectStyle}
+              disabled={!book}
+            >
+              <option value="">—</option>
+              {chapters
+                .filter(
+                  (c) =>
+                    !allowedRanges ||
+                    allowedRanges.some((r) => r.chapter === c)
+                )
+                .map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+            </select>
+          </div>
+        )}
 
         <div style={fieldStyle}>
           <label style={labelStyle}>Start verse</label>
@@ -254,16 +351,30 @@ export function BibleSelector({ onChange, fixedBook, allowNextChapter = false }:
             disabled={chapter === ""}
           >
             <option value="">—</option>
-            {verses.map((v) => (
-              <option key={v} value={v}>
-                {v}
-              </option>
-            ))}
+            {verses
+              .filter((v) => {
+                if (!allowedRanges || chapter === "") return true;
+                const range = allowedRanges.find(
+                  (r) => r.chapter === Number(chapter)
+                );
+                if (!range) return false;
+                return v >= range.start_verse && v <= range.end_verse;
+              })
+              .map((v) => (
+                <option key={v} value={v}>
+                  {v}
+                </option>
+              ))}
           </select>
         </div>
 
         <div style={fieldStyle}>
-          <label style={labelStyle}>End verse</label>
+          <label style={labelStyle}>
+            End verse{" "}
+            <span style={{ fontWeight: "normal", color: "#999" }}>
+              (optional)
+            </span>
+          </label>
           <select
             value={endVerse}
             onChange={(e) =>
@@ -274,7 +385,15 @@ export function BibleSelector({ onChange, fixedBook, allowNextChapter = false }:
           >
             <option value="">—</option>
             {verses
-              .filter((v) => startVerse === "" || v >= Number(startVerse))
+              .filter((v) => {
+                if (startVerse !== "" && v <= Number(startVerse)) return false;
+                if (!allowedRanges || chapter === "") return true;
+                const range = allowedRanges.find(
+                  (r) => r.chapter === Number(chapter)
+                );
+                if (!range) return false;
+                return v >= range.start_verse && v <= range.end_verse;
+              })
               .map((v) => (
                 <option key={v} value={v}>
                   {v}
@@ -352,7 +471,12 @@ export function BibleSelector({ onChange, fixedBook, allowNextChapter = false }:
           </div>
 
           <div style={fieldStyle}>
-            <label style={labelStyle}>Next end verse</label>
+            <label style={labelStyle}>
+              Next end verse{" "}
+              <span style={{ fontWeight: "normal", color: "#999" }}>
+                (optional)
+              </span>
+            </label>
             <select
               value={nextEndVerse}
               onChange={(e) =>
@@ -364,7 +488,7 @@ export function BibleSelector({ onChange, fixedBook, allowNextChapter = false }:
               <option value="">—</option>
               {nextVerses
                 .filter(
-                  (v) => nextStartVerse === "" || v >= Number(nextStartVerse)
+                  (v) => nextStartVerse === "" || v > Number(nextStartVerse)
                 )
                 .map((v) => (
                   <option key={v} value={v}>
@@ -390,11 +514,13 @@ export function BibleSelector({ onChange, fixedBook, allowNextChapter = false }:
         >
           <p style={{ fontWeight: 600, marginTop: 0, color: "#444" }}>
             {book} {chapter}:{startVerse}
-            {endVerse !== startVerse ? `-${endVerse}` : ""}
+            {endVerse !== "" && endVerse !== startVerse ? `-${endVerse}` : ""}
             {useNextChapter && nextChapter !== "" && nextStartVerse !== "" && (
               <>
                 , {nextChapter}:{nextStartVerse}
-                {nextEndVerse !== nextStartVerse ? `-${nextEndVerse}` : ""}
+                {nextEndVerse !== "" && nextEndVerse !== nextStartVerse
+                  ? `-${nextEndVerse}`
+                  : ""}
               </>
             )}
           </p>
