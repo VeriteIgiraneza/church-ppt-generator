@@ -53,10 +53,10 @@ export function HymnPicker({ label, selected, onSelect }: Props) {
           }}
         >
           <span>
-            <strong>{selected.hymn_id}</strong> {selected.title}
+            <strong>{selected.hymn_id} {selected.title} </strong>
             {selected.author && (
               <span style={{ color: "#666", marginLeft: 6 }}>
-                — {selected.author}
+                 {selected.author}
               </span>
             )}
           </span>

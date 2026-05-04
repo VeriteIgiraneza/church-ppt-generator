@@ -44,7 +44,7 @@ def root() -> dict[str, str]:
 
 @app.get("/api/health")
 def health_check() -> dict[str, str]:
-    return {"status": "healthy"}
+    return {"status": "Good to go!"}
 
 
 # Register routers

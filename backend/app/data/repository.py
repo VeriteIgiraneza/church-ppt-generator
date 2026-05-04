@@ -72,6 +72,12 @@ class DataRepository:
         return [BibleVerse(**row) for row in df.to_dict("records")]
 
     @staticmethod
+    def _load_creeds(path: Path) -> list[Creed]:
+        df = pd.read_csv(path, encoding="utf-8", keep_default_na=False)
+        df.columns = df.columns.str.strip()
+        return [Creed(**row) for row in df.to_dict("records")]
+
+    @staticmethod
     def _load_lords_prayer(path: Path) -> LordsPrayer | None:
         """Load The Lord's Prayer from CSV. Returns None if file missing."""
         if not path.exists():
@@ -114,6 +120,11 @@ class DataRepository:
     def creeds(self) -> list[Creed]:
         self._ensure_loaded()
         return self._creeds
+    
+    @property
+    def prayer_leaders(self) -> list[PrayerLeader]:
+        self._ensure_loaded()
+        return self._prayer_leaders
 
     @property
     def lords_prayer(self) -> LordsPrayer | None:

@@ -5,6 +5,7 @@ import { GenerateButton } from "./features/generate/GenerateButton";
 import { HymnPicker } from "./features/hymns/HymnPicker";
 import { PrayerLeaderSelector } from "./features/prayer/PrayerLeaderSelector";
 import { FlowItem } from "./features/service-flow/FlowItem";
+import { HymnLibrary } from "./features/hymn-library/HymnLibrary";
 import { checkHealth } from "./shared/api/client";
 import type { BibleReference } from "./types/service";
 import type { Hymn } from "./types/hymn";
@@ -19,6 +20,11 @@ function App() {
   const [healthState, setHealthState] = useState<LoadState<string>>({
     status: "loading",
   });
+
+  // Sidebar starts open on wide screens, closed on narrow ones.
+  const [sidebarOpen, setSidebarOpen] = useState(
+    typeof window !== "undefined" ? window.innerWidth >= 1100 : true
+  );
 
   // Form state
   const [serviceTitle, setServiceTitle] = useState("");
@@ -97,20 +103,48 @@ function App() {
   return (
     <div
       style={{
-        padding: "40px",
+        display: "flex",
+        gap: 24,
+        padding: "24px",
         fontFamily: "system-ui, sans-serif",
-        maxWidth: 900,
+        maxWidth: "90%",
         margin: "0 auto",
+        alignItems: "flex-start",
       }}
     >
-      <h1>Church PowerPoint Generator</h1>
+      {/* Left column: the form */}
+      <div style={{ flex: sidebarOpen ? "1 1 60%" : "1 1 100%", minWidth: 0 }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 8,
+          }}
+        >
+          <h1 style={{ margin: 0 }}>Church PowerPoint Generator</h1>
+          <button
+            onClick={() => setSidebarOpen((v) => !v)}
+            style={{
+              padding: "6px 12px",
+              fontSize: "0.9rem",
+              border: "1px solid #ddd",
+              borderRadius: 6,
+              background: "white",
+              cursor: "pointer",
+              color: "#444",
+            }}
+          >
+            {sidebarOpen ? "Hide" : "Show"}
+          </button>
+        </div>
 
       <section style={{ marginBottom: 24 }}>
         <p>
           Backend:{" "}
-          {healthState.status === "loading" && "⏳ checking..."}
-          {healthState.status === "success" && `✅ ${healthState.data}`}
-          {healthState.status === "error" && `❌ ${healthState.message}`}
+          {healthState.status === "loading" && "checking..."}
+          {healthState.status === "success" && `${healthState.data}`}
+          {healthState.status === "error" && `${healthState.message}`}
         </p>
       </section>
 
@@ -227,6 +261,23 @@ function App() {
           validationMessage={validationMessage}
         />
       </section>
+      </div>
+      {/* /Left column */}
+
+      {/* Right column: sticky sidebar */}
+      {sidebarOpen && (
+        <aside
+          style={{
+            flex: "1 1 40%",
+            minWidth: 320,
+            position: "sticky",
+            top: 24,
+            height: "calc(100vh - 48px)",
+          }}
+        >
+          <HymnLibrary />
+        </aside>
+      )}
     </div>
   );
 }
