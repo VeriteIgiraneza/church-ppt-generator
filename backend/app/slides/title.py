@@ -1,5 +1,3 @@
-"""Title slide — service title + Bible reference."""
-
 from pptx.presentation import Presentation
 from pptx.util import Inches, Pt
 

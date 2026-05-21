@@ -6,7 +6,8 @@ data through this module — never reads files directly.
 
 from __future__ import annotations
 
-import json
+import json 
+import shutil
 from functools import lru_cache
 from pathlib import Path
 
@@ -18,7 +19,6 @@ from app.models.creed import Creed
 from app.models.hymn import Hymn
 from app.models.prayer import PrayerLeader
 from app.models.lords_prayer import LordsPrayer
-
 
 class DataRepository:
     """Holds all church data in memory after loading from disk."""
@@ -165,6 +165,67 @@ class DataRepository:
             or query_lower in h.author.lower()
             or query_lower in h.category.lower()
         ]
+
+    # ---------- hymn mutations ----------
+
+    def add_hymn(self, hymn: Hymn) -> Hymn:
+        """Add a new hymn and persist to disk. Raises ValueError if ID already exists."""
+        self._ensure_loaded()
+        if any(h.hymn_id == hymn.hymn_id for h in self._hymns):
+            raise ValueError(f"Hymn ID {hymn.hymn_id} already exists")
+        self._hymns.append(hymn)
+        self._save_hymns()
+        return hymn
+
+    def update_hymn(self, hymn_id: int, hymn: Hymn) -> Hymn:
+        """Update an existing hymn and persist to disk.
+
+        The path's hymn_id is the source of truth; if the body has a different
+        hymn_id, it's treated as a rename (and we check the new ID isn't taken).
+        """
+        self._ensure_loaded()
+        idx = next(
+            (i for i, h in enumerate(self._hymns) if h.hymn_id == hymn_id), None
+        )
+        if idx is None:
+            raise ValueError(f"Hymn {hymn_id} not found")
+
+        # If the user changed the ID, make sure the new one isn't already taken
+        if hymn.hymn_id != hymn_id and any(
+            h.hymn_id == hymn.hymn_id for h in self._hymns
+        ):
+            raise ValueError(f"Hymn ID {hymn.hymn_id} already exists")
+
+        self._hymns[idx] = hymn
+        self._save_hymns()
+        return hymn
+
+    def delete_hymn(self, hymn_id: int) -> None:
+        """Remove a hymn and persist to disk."""
+        self._ensure_loaded()
+        before = len(self._hymns)
+        self._hymns = [h for h in self._hymns if h.hymn_id != hymn_id]
+        if len(self._hymns) == before:
+            raise ValueError(f"Hymn {hymn_id} not found")
+        self._save_hymns()
+
+    def _save_hymns(self) -> None:
+        """Write the in-memory hymn list back to hymns.csv.
+
+        Makes a .bak backup of the existing file before overwriting.
+        """
+        path = settings.hymns_file
+
+        # Backup current file before overwriting
+        if path.exists():
+            backup = path.with_suffix(".csv.bak")
+            shutil.copy(path, backup)
+
+        # Write the new file. pandas handles quoting commas/quotes correctly.
+        df = pd.DataFrame([h.model_dump() for h in self._hymns])
+        # Match the CSV column order from the original file
+        df = df[["hymn_id", "title", "verses", "author", "category"]]
+        df.to_csv(path, index=False, encoding="utf-8")
 
     # ---------- bible ----------
 

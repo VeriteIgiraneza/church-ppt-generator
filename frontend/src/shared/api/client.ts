@@ -79,6 +79,66 @@ export async function searchHymns(query: string): Promise<Hymn[]> {
   return apiGet<Hymn[]>(`/api/hymns/search?${params.toString()}`);
 }
 
+export async function createHymn(hymn: Hymn): Promise<Hymn> {
+  const response = await fetch(`${API_BASE_URL}/api/hymns`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(hymn),
+  });
+  if (!response.ok) {
+    let detail = response.statusText;
+    try {
+      const data = await response.json();
+      detail = data.detail ?? detail;
+    } catch {
+      // not JSON
+    }
+    throw new Error(`Create failed (${response.status}): ${detail}`);
+  }
+  return response.json();
+}
+
+export async function updateHymn(
+  originalHymnId: number,
+  hymn: Hymn
+): Promise<Hymn> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/hymns/${originalHymnId}`,
+    {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(hymn),
+    }
+  );
+  if (!response.ok) {
+    let detail = response.statusText;
+    try {
+      const data = await response.json();
+      detail = data.detail ?? detail;
+    } catch {
+      // not JSON
+    }
+    throw new Error(`Update failed (${response.status}): ${detail}`);
+  }
+  return response.json();
+}
+
+export async function deleteHymn(hymnId: number): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/api/hymns/${hymnId}`, {
+    method: "DELETE",
+  });
+  if (!response.ok) {
+    let detail = response.statusText;
+    try {
+      const data = await response.json();
+      detail = data.detail ?? detail;
+    } catch {
+      // not JSON
+    }
+    throw new Error(`Delete failed (${response.status}): ${detail}`);
+  }
+}
+
 // ----- Bible -----
 export async function getBibleBooks(): Promise<string[]> {
   return apiGet<string[]>("/api/bible/books");

@@ -6,6 +6,7 @@ import { HymnPicker } from "./features/hymns/HymnPicker";
 import { PrayerLeaderSelector } from "./features/prayer/PrayerLeaderSelector";
 import { FlowItem } from "./features/service-flow/FlowItem";
 import { HymnLibrary } from "./features/hymn-library/HymnLibrary";
+import { HymnEditor } from "./features/hymn-editor/HymnEditor";
 import { checkHealth } from "./shared/api/client";
 import type { BibleReference } from "./types/service";
 import type { Hymn } from "./types/hymn";
@@ -21,10 +22,7 @@ function App() {
     status: "loading",
   });
 
-  // Sidebar starts open on wide screens, closed on narrow ones.
-  const [sidebarOpen, setSidebarOpen] = useState(
-    typeof window !== "undefined" ? window.innerWidth >= 1100 : true
-  );
+  const [activeTab, setActiveTab] = useState<"service" | "hymns">("service");
 
   // Form state
   const [serviceTitle, setServiceTitle] = useState("");
@@ -78,7 +76,7 @@ function App() {
     if (missing.length > 0) {
       return {
         request: null,
-        validationMessage: `Still need: ${missing.join(", ")}`,
+        validationMessage: null,
       };
     }
 
@@ -103,41 +101,74 @@ function App() {
   return (
     <div
       style={{
-        display: "flex",
-        gap: 24,
-        padding: "24px",
+        padding: "110px 24px 24px",
         fontFamily: "system-ui, sans-serif",
-        maxWidth: "90%",
-        margin: "0 auto",
-        alignItems: "flex-start",
       }}
     >
-      {/* Left column: the form */}
-      <div style={{ flex: sidebarOpen ? "1 1 60%" : "1 1 100%", minWidth: 0 }}>
+      {/* <div
+        style={{
+          position: "sticky",
+          top: 0,
+          background: "#f8ffc8",
+          zIndex: 100,
+          padding: "12px 24px 0",
+          margin: "0 -24px 24px",
+          borderBottom: "2px solid #e0e0e0",
+        }}
+      > */}
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          background: "#f8ffc8",
+          zIndex: 100,
+          padding: "12px 24px 0",
+          borderBottom: "2px solid #e0e0e0",
+          transform: "translateZ(0)",
+          willChange: "transform",
+          backfaceVisibility: "hidden",
+        }}
+      >
+
+
+        <h1 style={{ margin: "0 0 16px" }}>Church PowerPoint Generator</h1>
+
+        {/* Tabs */}
         <div
           style={{
             display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 8,
+            gap: 4,
           }}
         >
-          <h1 style={{ margin: 0 }}>Church PowerPoint Generator</h1>
-          <button
-            onClick={() => setSidebarOpen((v) => !v)}
-            style={{
-              padding: "6px 12px",
-              fontSize: "0.9rem",
-              border: "1px solid #ddd",
-              borderRadius: 6,
-              background: "white",
-              cursor: "pointer",
-              color: "#444",
-            }}
+          <TabButton
+            active={activeTab === "service"}
+            onClick={() => setActiveTab("service")}
           >
-            {sidebarOpen ? "Hide" : "Show"}
-          </button>
+            Build service
+          </TabButton>
+          <TabButton
+            active={activeTab === "hymns"}
+            onClick={() => setActiveTab("hymns")}
+          >
+            Manage hymns
+          </TabButton>
         </div>
+      </div>
+
+      {activeTab === "hymns" ? (
+        <HymnEditor />
+      ) : (
+        <div
+          style={{
+            display: "flex",
+            gap: 24,
+            alignItems: "flex-start",
+          }}
+        >
+          {/* Left column: the form */}
+          <div style={{ flex: "1 1 60%", minWidth: 0 }}>
 
       <section style={{ marginBottom: 24 }}>
         <p>
@@ -265,21 +296,50 @@ function App() {
       {/* /Left column */}
 
       {/* Right column: sticky sidebar */}
-      {sidebarOpen && (
-        <aside
-          style={{
-            flex: "1 1 40%",
-            minWidth: 320,
-            position: "sticky",
-            top: 24,
-            height: "calc(100vh - 48px)",
-          }}
-        >
-          <HymnLibrary />
-        </aside>
+          <aside
+            style={{
+              flex: "1 1 40%",
+              minWidth: 320,
+              position: "sticky",
+              top: 24,
+              height: "calc(100vh - 48px)",
+            }}
+          >
+            <HymnLibrary />
+          </aside>
+        </div>
       )}
     </div>
   );
 }
 
-export default App; 
+function TabButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        padding: "10px 20px",
+        fontSize: "1rem",
+        fontWeight: active ? 600 : 400,
+        color: active ? "#2c7a2c" : "#666",
+        background: "transparent",
+        border: "none",
+        borderBottom: active ? "3px solid #2c7a2c" : "3px solid transparent",
+        marginBottom: "-2px",
+        cursor: "pointer",
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
+export default App;
