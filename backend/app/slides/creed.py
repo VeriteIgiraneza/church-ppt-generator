@@ -36,7 +36,7 @@ def _add_one_creed_slide(prs: Presentation, title: str, content: str) -> None:
     slide = prs.slides.add_slide(prs.slide_layouts[BLANK_LAYOUT_INDEX])
 
     # Title
-    title_box = slide.shapes.add_textbox(Inches(3), Inches(0.001), Inches(13.13), Inches(0.5))
+    title_box = slide.shapes.add_textbox(Inches(0.1), Inches(0.2), Inches(13.13), Inches(0.5))
     title_frame = title_box.text_frame
     title_frame.vertical_anchor = ANCHOR_TOP
     add_centered_paragraph(title_frame, title, Pt(50), bold=True)

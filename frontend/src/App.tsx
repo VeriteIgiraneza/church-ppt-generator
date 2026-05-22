@@ -133,8 +133,15 @@ function App() {
       >
 
 
-        <h1 style={{ margin: "0 0 16px" }}>Church PowerPoint Generator</h1>
-
+        <h1
+          style={{
+            margin: "0 0 8px",
+            fontSize: "2.4rem",
+            textAlign: "center",
+          }}
+        >
+          Church PowerPoint Generator
+        </h1>
         {/* Tabs */}
         <div
           style={{

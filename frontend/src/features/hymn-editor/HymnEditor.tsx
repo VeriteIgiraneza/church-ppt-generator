@@ -443,6 +443,21 @@ export function HymnEditor() {
                         next[idx] = e.target.value;
                         setForm({ ...form, verses: next });
                       }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && e.shiftKey) {
+                          e.preventDefault();
+                          const textarea = e.currentTarget;
+                          const cursorPos = textarea.selectionStart;
+                          const fullText = textarea.value;
+                          const before = fullText.slice(0, cursorPos);
+                          const after = fullText.slice(cursorPos);
+
+                          const next = [...form.verses];
+                          next[idx] = before;
+                          next.splice(idx + 1, 0, after);
+                          setForm({ ...form, verses: next });
+                        }
+                      }}
                       style={{
                         ...inputStyle,
                         fontFamily: "Georgia, serif",
@@ -482,6 +497,7 @@ export function HymnEditor() {
                 }}
               >
                 One verse per box. Press Enter for new lines within a verse.
+                Press <kbd>Shift</kbd>+<kbd>Enter</kbd> to split into a new verse at the cursor.
               </p>
             </FormField>
 
