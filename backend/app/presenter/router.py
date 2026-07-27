@@ -12,6 +12,7 @@ from app.presenter import plan_store
 from app.presenter.compile import CompileError, compile_deck
 from app.presenter.models.plan import ServicePlan, new_plan, validate_plan
 from app.presenter.models.session import SessionState
+from app.presenter import network
 from app.presenter.models.slides import Deck
 from app.presenter.session import session_manager
 
@@ -230,3 +231,16 @@ async def session_socket(
         pass
     finally:
         await session_manager.disconnect(websocket)
+
+class NetworkInfo(BaseModel):
+    addresses: list[str]
+    hostname: str
+
+
+@router.get("/network", response_model=NetworkInfo)
+def get_network() -> NetworkInfo:
+    """Addresses the phone can reach this laptop on."""
+    return NetworkInfo(
+        addresses=network.local_addresses(),
+        hostname=network.local_hostname(),
+    )

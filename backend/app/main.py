@@ -31,7 +31,10 @@ app = FastAPI(
 # CORS — let the frontend (Vite on port 5173) call this API
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings.cors_origin],
+    allow_origin_regex=(
+        r"^http://(localhost|127\.0\.0\.1|\[::1\]"
+        r"|(\d{1,3}\.){3}\d{1,3}|[\w-]+\.local)(:\d+)?$"
+    ),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -46,7 +49,6 @@ def root() -> dict[str, str]:
 @app.get("/api/health")
 def health_check() -> dict[str, str]:
     return {"status": "Good to go!"}
-
 
 # Register routers
 app.include_router(hymns.router)

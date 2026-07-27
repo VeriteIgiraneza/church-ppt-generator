@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { listPlans } from "./api";
+import { RemotePanel } from "./RemotePanel";
 import { SlideRenderer } from "./SlideRenderer";
 import { SlideStage } from "./SlideStage";
 import { useSession } from "./useSession";
@@ -254,6 +255,8 @@ export function ControlView() {
           </div>
         </>
       )}
+
+      <RemotePanel />
     </div>
   );
 }
