@@ -1,0 +1,85 @@
+{
+  "id": "2026-07-26",
+  "label": "",
+  "service_title": "tewere",
+  "steps": [
+    {
+      "id": "30c1d982",
+      "kind": "hymn",
+      "hymn_id": 1
+    },
+    {
+      "id": "ee540c69",
+      "kind": "title"
+    },
+    {
+      "id": "333a52a0",
+      "kind": "hymn",
+      "hymn_id": 20
+    },
+    {
+      "id": "ed582878",
+      "kind": "prayer",
+      "name": "Two by Two Prayer",
+      "led_by": null
+    },
+    {
+      "id": "7e9be8e4",
+      "kind": "creed",
+      "creed_name": "The Apostles' Creed"
+    },
+    {
+      "id": "16350538",
+      "kind": "prayer",
+      "name": "Personal Prayer",
+      "led_by": null
+    },
+    {
+      "id": "9b47eac6",
+      "kind": "hymn",
+      "hymn_id": 2
+    },
+    {
+      "id": "31494489",
+      "kind": "prayer",
+      "name": "Representative Prayer",
+      "led_by": "M. Goheun Rhee"
+    },
+    {
+      "id": "8dd6e3b6",
+      "kind": "title"
+    },
+    {
+      "id": "5f724663",
+      "kind": "scripture",
+      "ref": {
+        "book": "John",
+        "chapter": 1,
+        "start_verse": 1,
+        "end_verse": 6,
+        "next_chapter": null,
+        "next_start_verse": null,
+        "next_end_verse": null
+      }
+    },
+    {
+      "id": "a9240ea7",
+      "kind": "key_verse",
+      "ref": {
+        "book": "John",
+        "chapter": 1,
+        "start_verse": 1,
+        "end_verse": 2,
+        "next_chapter": null,
+        "next_start_verse": null,
+        "next_end_verse": null
+      }
+    },
+    {
+      "id": "a75c32ec",
+      "kind": "lords_prayer"
+    }
+  ],
+  "created_at": "2026-07-26T21:49:03.107997",
+  "updated_at": "2026-07-26T21:52:05.946325"
+}

@@ -1,0 +1,74 @@
+{
+  "id": "smoke-test",
+  "label": "Smoke test",
+  "service_title": "",
+  "steps": [
+    {
+      "id": "77166dd6",
+      "kind": "title"
+    },
+    {
+      "id": "2425036e",
+      "kind": "hymn",
+      "hymn_id": null
+    },
+    {
+      "id": "4a55cd7a",
+      "kind": "hymn",
+      "hymn_id": null
+    },
+    {
+      "id": "7e4fff0e",
+      "kind": "hymn",
+      "hymn_id": null
+    },
+    {
+      "id": "8ae78811",
+      "kind": "prayer",
+      "name": "Two by Two Prayer",
+      "led_by": null
+    },
+    {
+      "id": "b9842116",
+      "kind": "creed",
+      "creed_name": "The Apostles' Creed"
+    },
+    {
+      "id": "8a0e7d13",
+      "kind": "prayer",
+      "name": "Personal Prayer",
+      "led_by": null
+    },
+    {
+      "id": "cf8a78ed",
+      "kind": "hymn",
+      "hymn_id": null
+    },
+    {
+      "id": "a11d5e06",
+      "kind": "prayer",
+      "name": "Representative Prayer",
+      "led_by": null
+    },
+    {
+      "id": "897e7de3",
+      "kind": "title"
+    },
+    {
+      "id": "6d496b72",
+      "kind": "scripture",
+      "ref": null
+    },
+    {
+      "id": "2be7cc13",
+      "kind": "key_verse",
+      "ref": null
+    },
+    {
+      "id": "34e3fe4f",
+      "kind": "lords_prayer"
+    }
+  ],
+  "created_at": "2026-07-26T20:39:47.865082",
+  "updated_at": "2026-07-26T20:39:47.865105"
+}

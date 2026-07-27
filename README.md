@@ -112,6 +112,7 @@ Press `Ctrl + C` to stop both servers.
 ```bash
 cd backend
 uv run uvicorn app.main:app --reload --port 8000
+uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 **Terminal 2 — frontend:**

@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import bible, hymns, prayers, creeds, presentations
+from app.presenter import router as presenter_router
 from app.core.config import settings
 from app.data.repository import get_repository
 
@@ -53,6 +54,7 @@ app.include_router(bible.router)
 app.include_router(creeds.router)
 app.include_router(prayers.router)
 app.include_router(presentations.router)
+app.include_router(presenter_router.router)
 
 # 12,"Hear Our Praises","
 # May our homes be 
